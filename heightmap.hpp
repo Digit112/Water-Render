@@ -1,0 +1,64 @@
+#ifndef EKO_HEIGHTMAP
+#define EKO_HEIGHTMAP
+
+#if __cplusplus < 202302L
+#error This code requires C++23 or later.
+#endif
+
+#include <cstdint>
+#include <stdexcept>
+#include <type_traits>
+
+namespace eko {
+	template <typename T>
+	class heightmap {
+	private:
+		static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value, "Template parameter T must be an integer or floating-point type.");
+		
+		uint32_t size[2];
+		double scale[3];
+		T* data;
+		
+		void alloc() {
+			if (get_num_samples() == 0)
+				throw new std::invalid_argument("Size of heightmap would be 0.");
+			
+			if (SIZE_MAX / get_num_samples() < sizeof(T))
+				throw new std::invalid_argument("Size of heightmap would be greater than SIZE_MAX bytes.");
+				
+			data = new T[get_size()];
+		}
+	
+	public:
+		heightmap(uint32_t width, uint32_t height) :
+			size{width, height}, scale{1, 1, 1} {alloc();}
+		
+		heightmap(uint32_t width, uint32_t height, double xscale, double yscale, double zscale) :
+			size{width, height}, scale{xscale, yscale, zscale} {alloc();}
+		
+		/// Returns the size of the sample grid in bytes.
+		size_t get_size();
+		
+		/// Returns the number of total grid samples (width * height)
+		size_t get_num_samples();
+		
+		/// Fills the entire grid with the passed value.
+		void fill(T value);
+		
+		/// Read and Write
+		T get(uint32_t x, uint32_t y) const { return const_cast<heightmap&>(*this).get(x, y); }
+		T& get(uint32_t x, uint32_t y);
+		
+		T operator[](uint32_t x, uint32_t y) const { return get(x, y); }
+		T& operator[](uint32_t x, uint32_t y) { return get(x, y); }
+		
+		~heightmap() {
+			if (data != nullptr) delete[] data;
+			data = nullptr;
+		}
+	};
+}
+
+#include "heightmap.cpp"
+
+#endif
