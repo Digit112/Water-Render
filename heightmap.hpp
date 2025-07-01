@@ -49,20 +49,22 @@ namespace eko {
 		/// Fills the entire grid with the passed value.
 		void fill(T value);
 		
-		/// Read and Write
+		/// Return sample as read-only rvalue
 		T get(uint32_t x, uint32_t y) const { return const_cast<heightmap&>(*this).get(x, y); }
+		
+		/// Return sample as writable lvalue reference
 		T& get(uint32_t x, uint32_t y);
 		
+		/// Return sample as read-only rvalue
 		T operator[](uint32_t x, uint32_t y) const { return get(x, y); }
+		
+		/// Return sample as writable lvalue reference
 		T& operator[](uint32_t x, uint32_t y) { return get(x, y); }
 		
-		// Save to file
-		void save(std::ofstream& fout);
+		/// Save to file.
+		void save(const char* fn);
 		
-		~heightmap() {
-			if (data != nullptr) delete[] data;
-			data = nullptr;
-		}
+		~heightmap();
 	};
 }
 
