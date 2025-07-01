@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cstring>
 #include <fstream>
+#include <limits>
 #include <stdexcept>
 #include <type_traits>
 
@@ -32,6 +33,13 @@ namespace eko {
 		}
 	
 	public:
+		struct pass_results {
+			double sum;
+			double avg;
+			T max;
+			T min;
+		};
+			
 		heightmap(uint32_t width, uint32_t height) :
 			size{width, height}, scale{1, 1, 1} {alloc();}
 		
@@ -46,11 +54,18 @@ namespace eko {
 		
 		heightmap(std::ifstream& fin);
 		
+		// Get the minimum and maximum representable sample values for the current sample encoding template parameter.
+		static constexpr T get_min_sample();
+		static constexpr T get_max_sample();
+		
 		/// Returns the size of the sample grid in bytes.
 		size_t get_size();
 		
 		/// Returns the number of total grid samples (width * height)
 		size_t get_num_samples();
+		
+		/// Returns max, min, and average values in the heightmap.
+		pass_results get_stats() const;
 		
 		/// Fills the entire grid with the passed value.
 		void fill(T value);

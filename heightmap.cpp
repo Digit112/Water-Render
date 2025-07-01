@@ -128,6 +128,62 @@ namespace eko {
 		}
 	}
 	
+	/* ---- utilities ---- */
+	
+	template <typename T>
+	constexpr T heightmap<T>::get_min_sample() {
+		if constexpr (std::is_same<T, uint8_t>::value)
+			return 0;
+		else if constexpr (std::is_same<T, uint16_t>::value)
+			return 0;
+		else if constexpr (std::is_same<T, uint32_t>::value)
+			return 0;
+		else if constexpr (std::is_same<T, uint64_t>::value)
+			return 0;
+		else if constexpr (std::is_same<T, int8_t>::value)
+			return INT8_MIN;
+		else if constexpr (std::is_same<T, int16_t>::value)
+			return INT16_MIN;
+		else if constexpr (std::is_same<T, int32_t>::value)
+			return INT32_MIN;
+		else if constexpr (std::is_same<T, int64_t>::value)
+			return INT64_MIN;
+		else if constexpr (std::is_same<T, float>::value)
+			return -std::numeric_limits<float>::infinity();
+		else if constexpr (std::is_same<T, double>::value)
+			return -std::numeric_limits<double>::infinity();
+		else {
+			throw std::invalid_argument("Cannot retrieve minimum for given template.");
+		}
+	}
+	
+	template <typename T>
+	constexpr T heightmap<T>::get_max_sample() {
+		if constexpr (std::is_same<T, uint8_t>::value)
+			return UINT8_MAX;
+		else if constexpr (std::is_same<T, uint16_t>::value)
+			return UINT16_MAX;
+		else if constexpr (std::is_same<T, uint32_t>::value)
+			return UINT32_MAX;
+		else if constexpr (std::is_same<T, uint64_t>::value)
+			return UINT64_MAX;
+		else if constexpr (std::is_same<T, int8_t>::value)
+			return INT8_MAX;
+		else if constexpr (std::is_same<T, int16_t>::value)
+			return INT16_MAX;
+		else if constexpr (std::is_same<T, int32_t>::value)
+			return INT32_MAX;
+		else if constexpr (std::is_same<T, int64_t>::value)
+			return INT64_MAX;
+		else if constexpr (std::is_same<T, float>::value)
+			return std::numeric_limits<float>::infinity();
+		else if constexpr (std::is_same<T, double>::value)
+			return std::numeric_limits<double>::infinity();
+		else {
+			throw std::invalid_argument("Cannot retrieve minimum for given template.");
+		}
+	}
+	
 	template <typename T>
 	size_t heightmap<T>::get_size() {
 		return get_num_samples() * sizeof(T);
@@ -136,6 +192,21 @@ namespace eko {
 	template <typename T>
 	size_t heightmap<T>::get_num_samples() {
 		return (size_t) size[0] * size[1];
+	}
+	
+	template <typename T>
+	heightmap<T>::pass_results heightmap<T>::get_stats() const {
+		pass_results res{0, 0, heightmap::get_min_sample(), heightmap::get_max_sample()};
+		
+		for (size_t i = 0; i < get_num_samples(); i++) {
+			res.sum += data[i];
+			if (data[i] > res.max) res.max = data[i];
+			if (data[i] < res.min) res.min = data[i];
+		}
+		
+		res.avg = res.sum / get_num_samples();
+		
+		return res;
 	}
 	
 	template <typename T>
