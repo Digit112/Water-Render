@@ -6,7 +6,7 @@ A simple script for generating and rendering heightmaps which represent the surf
 
 Header (40 bytes):
 
-1. ASCII-encoded `EKO HM` (5 bytes)
+1. ASCII-encoded `EKOHM` (5 bytes)
 
 	A 5-byte filetype signature.
 

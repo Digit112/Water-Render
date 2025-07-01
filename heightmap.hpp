@@ -6,6 +6,8 @@
 #endif
 
 #include <cstdint>
+#include <cstring>
+#include <fstream>
 #include <stdexcept>
 #include <type_traits>
 
@@ -36,6 +38,8 @@ namespace eko {
 		heightmap(uint32_t width, uint32_t height, double xscale, double yscale, double zscale) :
 			size{width, height}, scale{xscale, yscale, zscale} {alloc();}
 		
+		heightmap(std::ifstream& fin);
+		
 		/// Returns the size of the sample grid in bytes.
 		size_t get_size();
 		
@@ -51,6 +55,9 @@ namespace eko {
 		
 		T operator[](uint32_t x, uint32_t y) const { return get(x, y); }
 		T& operator[](uint32_t x, uint32_t y) { return get(x, y); }
+		
+		// Save to file
+		void save(std::ofstream& fout);
 		
 		~heightmap() {
 			if (data != nullptr) delete[] data;
