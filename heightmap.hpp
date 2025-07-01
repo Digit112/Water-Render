@@ -38,6 +38,12 @@ namespace eko {
 		heightmap(uint32_t width, uint32_t height, double xscale, double yscale, double zscale) :
 			size{width, height}, scale{xscale, yscale, zscale} {alloc();}
 		
+		heightmap(const heightmap& other);
+		heightmap(heightmap&& other);
+		
+		heightmap& operator=(const heightmap& other);
+		heightmap& operator=(heightmap&& other);
+		
 		heightmap(std::ifstream& fin);
 		
 		/// Returns the size of the sample grid in bytes.

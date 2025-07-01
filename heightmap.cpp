@@ -1,4 +1,51 @@
 namespace eko {
+	/* ---- copy and move semantics ---- */
+	
+	template <typename T> // copy constructor
+	heightmap<T>::heightmap(const heightmap& other) :
+		size{other.size[0], other.size[1]}, scale{other.scale[0], other.scale[1], other.scale[2]}
+	{
+		alloc();
+		for (size_t i = 0; i < get_num_samples(); i++)
+			data[i] = other.data[i];
+	}
+	
+	template <typename T> // move constructor
+	heightmap<T>::heightmap(heightmap&& other) :
+		size{other.size[0], other.size[1]}, scale{other.scale[0], other.scale[1], other.scale[2]}, data(other.data)
+	{
+		other.size[0] = 0; other.size[1] = 0;
+		other.scale[0] = 0; other.scale[1] = 0; other.scale[2] = 0;
+		other.data = nullptr;
+	}
+	
+	template <typename T> // copy assignment
+	heightmap<T>& heightmap<T>::operator=(const heightmap& other) {
+		size[0] = other.size[0]; size[1] = other.size[1];
+		scale[0] = other.scale[0]; scale[1] = other.scale[1]; scale[2] = other.scale[2];
+		
+		if (data != nullptr) delete[] data;
+		alloc(); // TODO: Don't reallocate if the size hasn't changed!
+		
+		for (size_t i = 0; i < get_num_samples(); i++)
+			data[i] = other.data[i];
+	}
+	
+	template <typename T> // move assignment
+	heightmap<T>& heightmap<T>::operator=(heightmap&& other) {
+		size[0] = other.size[0]; size[1] = other.size[1];
+		scale[0] = other.scale[0]; scale[1] = other.scale[1]; scale[2] = other.scale[2];
+		
+		if (data != nullptr) delete[] data;
+		data = other.data;
+		
+		other.size[0] = 0; other.size[1] = 0;
+		other.scale[0] = 0; other.scale[1] = 0; other.scale[2] = 0;
+		other.data = nullptr;
+	}
+	
+	/* ---- load from file ---- */
+	
 	template <typename T>
 	heightmap<T>::heightmap(std::ifstream& fin) : size{0, 0}, scale{0, 0, 0} {
 		if (!fin.is_open()) throw std::invalid_argument("File not open.");
@@ -70,7 +117,8 @@ namespace eko {
 		
 		// Read body.
 		alloc();
-		for (size_t i = 0; i < get_num_samples(); i++) fin.read(reinterpret_cast<char*>(&data[i]), sizeof(*data));
+		for (size_t i = 0; i < get_num_samples(); i++)
+			fin.read(reinterpret_cast<char*>(&data[i]), sizeof(*data));
 		
 		if (fin.eof()) {
 			size[0] = 0; size[1] = 0;
@@ -140,7 +188,8 @@ namespace eko {
 		fout.write(reinterpret_cast<const char*>(&scale[2]), sizeof(*scale));
 		
 		// Save body
-		for (size_t i = 0; i < get_num_samples(); i++) fout.write(reinterpret_cast<const char*>(&data[i]), sizeof(*data));
+		for (size_t i = 0; i < get_num_samples(); i++)
+			fout.write(reinterpret_cast<const char*>(&data[i]), sizeof(*data));
 		
 		fout.close();
 	}
