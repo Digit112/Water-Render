@@ -185,12 +185,22 @@ namespace eko {
 	}
 	
 	template <typename T>
-	size_t heightmap<T>::get_size() {
+	uint32_t heightmap<T>::get_width() const {
+		return size[0];
+	}
+	
+	template <typename T>
+	uint32_t heightmap<T>::get_height() const {
+		return size[1];
+	}
+	
+	template <typename T>
+	size_t heightmap<T>::get_size() const {
 		return get_num_samples() * sizeof(T);
 	}
 	
 	template <typename T>
-	size_t heightmap<T>::get_num_samples() {
+	size_t heightmap<T>::get_num_samples() const {
 		return (size_t) size[0] * size[1];
 	}
 	
@@ -220,7 +230,7 @@ namespace eko {
 	}
 	
 	template <typename T>
-	void heightmap<T>::save(const char* fn) {
+	void heightmap<T>::save(const char* fn) const {
 		std::ofstream fout(fn, std::ios::binary | std::ios::trunc);
 		
 		// Write signature and version
@@ -261,6 +271,38 @@ namespace eko {
 		// Save body
 		for (size_t i = 0; i < get_num_samples(); i++)
 			fout.write(reinterpret_cast<const char*>(&data[i]), sizeof(*data));
+		
+		fout.close();
+	}
+	
+	template <typename T>
+	void heightmap<T>::draw(const char* fn) const {
+		pass_results pr = get_stats();
+		draw(fn, pr.min, pr.max);
+	}
+	
+	template <typename T>
+	void heightmap<T>::draw(const char* fn, T min_val, T max_val) const {
+		if (min_val > max_val)
+			throw std::invalid_argument("min_val must be less than or equal to max_val");
+		
+		std::ofstream fout(fn, std::ios::binary | std::ios::trunc);
+		fout << "P5 " << size[0] << " " << size[1] << " 255\n";
+		
+		// For no difference between min and max, write solid color.
+		if (min_val == max_val) for (size_t i = 0; i < get_num_samples(); i++) fout << (uint8_t) 128;
+		
+		// otherwise write the image as expected
+		else {
+			for (size_t i = 0; i < get_num_samples(); i++) {
+				T datum = data[i];
+				if (datum < min_val) datum = min_val;
+				if (datum > max_val) datum = max_val;
+				
+				float t = (float) (datum - min_val) / (max_val - min_val);
+				fout << (uint8_t) (t * 255);
+			}
+		}
 		
 		fout.close();
 	}

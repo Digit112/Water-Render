@@ -54,15 +54,23 @@ namespace eko {
 		
 		heightmap(std::ifstream& fin);
 		
-		// Get the minimum and maximum representable sample values for the current sample encoding template parameter.
+		/// Get the minimum representable sample value for the current sample encoding template parameter.
 		static constexpr T get_min_sample();
+		
+		/// Get the maximum representable sample value for the current sample encoding template parameter.
 		static constexpr T get_max_sample();
 		
+		/// Returns the width of the sample grid.
+		uint32_t get_width() const;
+		
+		/// Returns the height of the sample grid.
+		uint32_t get_height() const;
+		
 		/// Returns the size of the sample grid in bytes.
-		size_t get_size();
+		size_t get_size() const;
 		
 		/// Returns the number of total grid samples (width * height)
-		size_t get_num_samples();
+		size_t get_num_samples() const;
 		
 		/// Returns max, min, and average values in the heightmap.
 		pass_results get_stats() const;
@@ -83,7 +91,16 @@ namespace eko {
 		T& operator[](uint32_t x, uint32_t y) { return get(x, y); }
 		
 		/// Save to file.
-		void save(const char* fn);
+		void save(const char* fn) const;
+		
+		/// Writes the heightmap as a viewable image. Creates a .pgm grayscale image.
+		/// Linearly interpolates all values between the two passed min and max
+		/// limits which correspond to black and white, respectively.
+		void draw(const char* fn, T min_val, T max_val) const;
+		
+		/// Draws this heightmap as a file with the minimum extant sample
+		/// corresponding to black and the maximum to white.
+		void draw(const char* fn) const;
 		
 		~heightmap();
 	};
